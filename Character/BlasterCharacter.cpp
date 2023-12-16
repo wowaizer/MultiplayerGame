@@ -28,6 +28,7 @@
 #include "NiagaraComponent.h"
 #include "Bluster/GameState/BlasterGameState.h"
 #include "Bluster/PlayerStart/TeamPlayerStart.h"
+#include "DrawDebugHelpers.h"
 
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -397,6 +398,8 @@ void ABlasterCharacter::Tick(float DeltaTime)
 
 	HideCameraIfCharacterClose();
 	PollInit();
+
+	FallingDamage();
 
 }
 //-------------------------------------------------------------------------------------------------------------------------
@@ -1290,7 +1293,137 @@ void ABlasterCharacter::PollInit()
 
 		}
 	}
+	UpdateHUDAmmo();
+	UpdateHUDShield();
+
+	BlasterPlayerController = BlasterPlayerController == nullptr ? 
+	Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if(BlasterPlayerController && Combat)
+	{
+		BlasterPlayerController->SetHUDGrenades(GetCombat()->GetGrenades());
+	}
 	
+
+}
+//-------------------------------------------------------------------------------------------------------------------------
+void ABlasterCharacter::FallingDamage()
+{
+
+	if(bElimmed) return;
+
+	bool IsInAir = GetCharacterMovement()->IsFalling();
+
+
+	if(IsInAir && !StartCalculateFallingDamage)
+	{
+		StartFallingLocation = GetActorLocation();
+		StartFallingLocation.X = 0.f;
+		StartFallingLocation.Y = 0.f;
+		StartCalculateFallingDamage = true;
+	}
+		
+	if (!IsInAir && StartCalculateFallingDamage)
+	{
+		
+		FVector EndLocation = GetActorLocation();
+		EndLocation.X = 0.f;
+		EndLocation.Y = 0.f;
+	
+
+		float FallingDistance = FVector::Distance(StartFallingLocation,EndLocation);
+		StartCalculateFallingDamage = false;
+			
+	/*	UE_LOG(LogTemp,Warning,TEXT("FallingDistance: %f"),FallingDistance);*/
+		
+
+		if(FallingDistance > 830.f && FallingDistance < 1150.f)
+		{
+			FallingDamageToHealth = 10.f;
+			CalculateFallingDamage(EndLocation,FallingDistance);
+			
+		
+		}
+		if(FallingDistance > 1150.f && FallingDistance < 1300.f)
+		{
+			FallingDamageToHealth = 30.f;
+			CalculateFallingDamage(EndLocation,FallingDistance);
+			
+		}
+		if(FallingDistance > 1300.f && FallingDistance < 1550.f)
+		{
+			FallingDamageToHealth = 50.f;
+			CalculateFallingDamage(EndLocation,FallingDistance);
+
+		}
+		if(FallingDistance > 1550.f)
+		{
+			FallingDamageToHealth = 100.f;
+			CalculateFallingDamage(EndLocation,FallingDistance);
+			
+		}
+	}
+	
+		
+	/*float DamageToHealth = Damage;
+
+	if(Shield > 0)
+	{
+		if(Shield >= Damage)
+		{
+			Shield = FMath::Clamp(Shield - Damage,0.f,MaxShield);
+			DamageToHealth = 0.f;
+		}
+		else
+		{
+			DamageToHealth = FMath::Clamp(DamageToHealth - Shield,0.f,Damage);
+			Shield = 0.f;
+		}
+	}
+	Health = FMath::Clamp(Health - DamageToHealth,0.f,MaxHealth);
+
+	UpdateHUDHealth();
+	UpdateHUDShield();
+	PlayHitReactMonatage();
+
+	if (Health == 0.f)
+	{
+
+		if(BlasterGameMode)
+		{
+			BlasterPlayerController = BlasterPlayerController == nullptr ? 
+				Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+
+			ABlasterPlayerController *AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
+
+			BlasterGameMode->PlayerEliminated(this,BlasterPlayerController,AttackerController);
+
+		}
+
+	}*/
+
+}
+//-------------------------------------------------------------------------------------------------------------------------
+void ABlasterCharacter::CalculateFallingDamage(FVector EndLocation,float FallingDistance)
+{
+	
+	Health = FMath::Clamp(Health - FallingDamageToHealth,0.f,MaxHealth);
+
+	UpdateHUDHealth();
+
+	StartFallingLocation = FVector(0.f,0.f,0.f);
+	EndLocation = FVector(0.f,0.f,0.f);
+	FallingDistance = (0.f,0.f,0.f);
+
+
+	if(Health == 0.f)
+	{
+		Elim(false);
+	}
+	else
+	{
+		PlayHitReactMonatage();
+	}
+
 }
 //-------------------------------------------------------------------------------------------------------------------------
 void ABlasterCharacter::SetSpawnPoint()

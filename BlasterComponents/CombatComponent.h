@@ -52,6 +52,11 @@ public:
 	void PickupAmmo(EWeaponType WeaponType,int32 AmmoAmmount);
 	bool bLocallyReloading = false;
 
+	void PickUpGrenade();
+
+	UFUNCTION (Server,Reliable)
+	void ServerPickUpGrenade();
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -99,6 +104,7 @@ protected:
 
 	UFUNCTION (Server,Reliable)
 	void ServerThrowGrenade();
+
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AProjectile> GrenadeClass;
@@ -248,5 +254,6 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	FORCEINLINE int32 GetGrenades() const {return Grenades;}
+	FORCEINLINE int32 GetMaxGrenades() const {return MaxGrenades;}
 	bool ShouldSwapWeapons();
 };

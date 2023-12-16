@@ -668,18 +668,7 @@ void UCombatComponent::ThrowGrenadeFinished()
 	AttachActorToRightHand(EquippedWeapon);
 
 }
-//-------------------------------------------------------------------------------------------------------------------------
 
-void UCombatComponent::LaunchGrenade()
-{
-	ShowAttachedGrenade(false);
-	if(Character && Character->IsLocallyControlled())
-	{
-		ServerLaunchGrenade(HitTarget);
-	}
-	
-	
-}
 //-------------------------------------------------------------------------------------------------------------------------
 
 void UCombatComponent::PickupAmmo(EWeaponType WeaponType, int32 AmmoAmmount)
@@ -698,6 +687,18 @@ void UCombatComponent::PickupAmmo(EWeaponType WeaponType, int32 AmmoAmmount)
 }
 //-------------------------------------------------------------------------------------------------------------------------
 
+void UCombatComponent::LaunchGrenade()
+{
+	ShowAttachedGrenade(false);
+	if(Character && Character->IsLocallyControlled())
+	{
+		ServerLaunchGrenade(HitTarget);
+	}
+	
+
+}
+//-------------------------------------------------------------------------------------------------------------------------
+
 void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuantize &Target)
 {
 	if(Character && GrenadeClass && Character->GetAttachedGrenade())
@@ -707,6 +708,8 @@ void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuant
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = Character;
 		SpawnParams.Instigator = Character;
+		SpawnParams.SpawnCollisionHandlingOverride; //bug fix witg grenades starting launch
+		
 		UWorld *Wolrd = GetWorld();
 		if(Wolrd)
 		{
@@ -823,6 +826,7 @@ void UCombatComponent::ThrowGrenade()
 		
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------
 void UCombatComponent::ShowAttachedGrenade(bool bShowGrenade)
 {
@@ -849,6 +853,27 @@ void UCombatComponent::ServerThrowGrenade_Implementation()
 
 	Grenades = FMath::Clamp(Grenades - 1,0,MaxGrenades);
 	UpdateHUDGrenades();
+}
+//-------------------------------------------------------------------------------------------------------------------------
+void UCombatComponent::PickUpGrenade()
+{
+	if(Character && !Character->HasAuthority())
+	{
+		ServerPickUpGrenade();
+	}
+
+	if(Character && Character->HasAuthority())
+	{
+		Grenades = FMath::Clamp(Grenades + 1,0,MaxGrenades);
+		UpdateHUDGrenades();
+	}
+}
+//-------------------------------------------------------------------------------------------------------------------------
+void UCombatComponent::ServerPickUpGrenade_Implementation()
+{
+	Grenades = FMath::Clamp(Grenades + 1,0,MaxGrenades);
+	UpdateHUDGrenades();
+
 }
 //-------------------------------------------------------------------------------------------------------------------------
 void UCombatComponent::OnRep_Grenades()

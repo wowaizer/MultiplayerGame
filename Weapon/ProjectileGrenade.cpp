@@ -2,6 +2,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "Components/BoxComponent.h"
+#include "Bluster/Bluster.h"
 
 //-------------------------------------------------------------------------------------------------------------------------
 AProjectileGrenade::AProjectileGrenade()
@@ -15,6 +17,8 @@ AProjectileGrenade::AProjectileGrenade()
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 	ProjectileMovementComponent->SetIsReplicated(true);
 	ProjectileMovementComponent->bShouldBounce = true;
+
+	
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -24,7 +28,7 @@ void AProjectileGrenade::BeginPlay()
 
 	SpawnTrailSystem ();
 	StartDestroyTimer ();
-
+	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh,ECollisionResponse::ECR_Ignore);
 	ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this,&AProjectileGrenade::OnBounce);
 }
 //-------------------------------------------------------------------------------------------------------------------------

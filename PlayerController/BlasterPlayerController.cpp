@@ -628,8 +628,8 @@ void ABlasterPlayerController::PollInit()
 					
 					}
 					
-					BlasterCharacter->UpdateHUDAmmo();
-					BlasterCharacter->UpdateHUDShield();
+					/*BlasterCharacter->UpdateHUDAmmo();
+					BlasterCharacter->UpdateHUDShield();*/
 				}
 
 			}

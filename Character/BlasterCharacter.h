@@ -167,6 +167,15 @@ protected:
 	void PollInit();
 
 
+	//Falling damage logic
+
+	void FallingDamage();
+	void CalculateFallingDamage(FVector EndLocation,float FallingDistance);
+
+	FVector StartFallingLocation = FVector(0.f,0.f,0.f);
+	bool StartCalculateFallingDamage = false;
+	float FallingDamageToHealth = 0.f;
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class USpringArmComponent *CameraBoom; 
